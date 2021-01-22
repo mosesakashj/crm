@@ -32,23 +32,6 @@
         </v-card>
       </v-dialog>
       
-      
-      <v-carousel cycle height="400" hide-delimiter-background show-arrows-on-hover>
-        <template v-slot:prev="{ on, attrs }">
-          <v-btn color="success" v-bind="attrs" v-on="on">Previous slide</v-btn>
-        </template>
-        <template v-slot:next="{ on, attrs }">
-          <v-btn color="info" v-bind="attrs" v-on="on">Next slide</v-btn>
-        </template>
-        <v-carousel-item v-for="(slide, i) in slides" :key="i">
-          <v-sheet :color="colors[i]" height="100%">
-            <v-row class="fill-height" align="center" justify="center">
-              <div class="display-3">{{ slide }} Slide</div>
-            </v-row>
-          </v-sheet>
-        </v-carousel-item>
-      </v-carousel>
-
 <!-- ............................................. -->
 
       <data-list :payload="datalistObj"></data-list>
@@ -62,20 +45,6 @@ import DataList from '@/components/DataList.vue'
 export default {
   data () {
     return {
-      colors: [
-          'indigo',
-          'warning',
-          'pink darken-2',
-          'red lighten-1',
-          'deep-purple accent-4',
-        ],
-        slides: [
-          'First',
-          'Second',
-          'Third',
-          'Fourth',
-          'Fifth',
-        ],
       dialog:false,
       modelObj: {
         products:[]
@@ -178,7 +147,7 @@ export default {
       return {
         title: !this.productUpdateBtn ? 'New Product' : 'Edit Product',
         properties: [ 
-        {model: 'product',type: this.formType.SELECT, select_text:'name', select_value: 'code', items:this.allData.Products.slice(), class: 'lg3 sm6 pt-2', label: 'Select Product','hide-details': false,rules: [value => !!value || 'Value Must Be Selected'],},
+        {model: 'product',type: this.formType.SELECT, select_text:'name', select_value: 'id', items:this.allData.Products.slice(), class: 'lg3 sm6 pt-2', label: 'Select Product','hide-details': false, rules: [value => !!value || 'Value Must Be Selected'],},
         {model: 'quantity', rules: [value => !!value || 'Value Must Be Selected'], type: this.formType.TEXT, class: 'lg3 sm6 pt-2',label: 'Quantity','hide-details': false}
         ],
         buttons: [
@@ -226,7 +195,7 @@ export default {
       this.getOrderdata()
     },
     openform(){
-      this.updateBtn=false
+      this.updateBtn = false
       this.modal.dialog=true
       this.modelObj={}
       this.modelObj.id=this.getRandomId()
@@ -239,35 +208,38 @@ export default {
     closeform(){
       this.modal.dialog=false
       this.orderProductObj.list=[]
-      this.$refs.formRef.$refs.validateForm.reset.length ? this.$refs.formRef.$refs.validateForm.reset() : false
+      this.$refs.formRef.$refs.validateForm.reset()
     },
     closeProductform(){
       this.modal.dialog3=false
-      this.$refs.productFormRef.$refs.validateForm.reset.length ? this.$refs.productFormRef.$refs.validateForm.reset() : false
+      this.$refs.productFormRef.$refs.validateForm.reset()
     },
     addOrders(){
       if (this.$refs.formRef.$refs.validateForm.validate()) {
-      this.modal.dialog=false
-      this.allData.Orders.push(this.modelObj)
-      this.orderProductObj.list.forEach(x=>{ this.allData.OrderProducts.push(x)})
-      this.orderProductObj.list=[]
-      this.setOrders()
-      this.$refs.formRef.$refs.validateForm.reset()
-      }else{
-        this.snackbar={title:'Give Valid Details...',state:true}
-      }
+        if(this.orderProductObj.list.length){
+        this.modal.dialog=false
+        this.allData.Orders.push(this.modelObj)
+        this.orderProductObj.list.forEach(x=>{ this.allData.OrderProducts.push(x)})
+        this.orderProductObj.list=[]
+        this.setOrders()
+        this.$refs.formRef.$refs.validateForm.reset()
+        } else this.snackbar={title:'Add Atleat One Product...',state:true}
+      } else this.snackbar={title:'Give Valid Details...',state:true}
     },
     addProducts(){
+      if (this.$refs.productFormRef.$refs.validateForm.validate()) {
       this.modal.dialog3=false
+      console.log(this.productObj.product)
       let result=this.allData.Products.find(x=>{
-        if(x.code===this.productObj.product){
+        if(x.id===this.productObj.product){
           return x
         }
       })
-      let x =Object.assign({},result,{id:this.getRandomId(),orderid: this.modelObj.id,quantity:this.productObj.quantity})
+      let x =Object.assign({},result,{id:this.getRandomId(),orderid: this.modelObj.id,quantity:this.productObj.quantity, product:this.productObj.product})
       x.total = x.saleprice * x.quantity
       this.orderProductObj.list.push(x)
       this.$refs.productFormRef.$refs.validateForm.reset()
+      }
     },
     editOrder(data){
       this.formTitle='Edit Order'
@@ -278,43 +250,57 @@ export default {
       this.allData.OrderProducts.forEach(x=>{
         x.total = x.saleprice * x.quantity
        if( x.orderid === this.modelObj.id ){
-         this.orderProductObj.list.push(x)
+         this.orderProductObj.list.includes(x) ? false : this.orderProductObj.list.push(x)
        }
       })
     },
     editProducts(data){
       this.modal.dialog3=true
       this.productUpdateBtn=true
-      this.productObj=Object.assign({},data)
-      this.productObj.product=data.code
+      this.productObj = Object.assign({},data)
+      // this.productObj.product= data.id
+      console.log(data, this.productObj)
     },
     updateOrders(){
+       if (this.$refs.formRef.$refs.validateForm.validate()) {
+        if(this.orderProductObj.list.length){
         this.allData.Orders.forEach((x,index)=>{
           x.id === this.modelObj.id ? this.allData.Orders.splice(index,1,this.modelObj) : false
         })
-        this.orderProductObj.list.forEach((x)=>{ 
-          this.allData.OrderProducts.forEach((y,index)=>{
-            x.orderid === y.orderid && x.id === y.id ? this.allData.OrderProducts.splice(index,1,x) : false
+        this.orderProductObj.list.forEach((x, xindex)=>{ 
+          if(this.allData.OrderProducts.length){
+            this.allData.OrderProducts.forEach((y,index)=>{
+              x.id === y.id ? (this.allData.OrderProducts.splice(index,1,x), this.orderProductObj.list.splice(xindex,1)) : false
           })
+          }else this.allData.OrderProducts.push(x)
         })
+        this.orderProductObj.list.forEach((x)=>{
+          if(!this.allData.OrderProducts.includes(x)) this.allData.OrderProducts.push(x)
+        })
+        this.orderProductObj.list = []
         this.modal.dialog=false
         this.setOrders()
+        this.$refs.formRef.$refs.validateForm.reset()
+        } else this.snackbar={title:'Add Atleat One Product...',state:true}
+      } else this.snackbar={title:'Give Valid Details...',state:true}
     },
     updateProducts(){
-      this.modal.dialog3=false
-      let result=this.allData.Products.find((x)=>{
-        if(x.code===this.productObj.product){
-          return x
-        }
-      })
-      let x =Object.assign({},result,{orderid: this.modelObj.id,quantity:this.productObj.quantity,id:this.productObj.id})
-      x.total = x.saleprice * x.quantity
-      this.orderProductObj.list.find((y,index)=>{
-        if(y.id===x.id){
-         this.orderProductObj.list.splice(index,1,x)
-        }
-      })
-      this.$refs.productFormRef.$refs.validateForm.reset()
+      if (this.$refs.productFormRef.$refs.validateForm.validate()) {
+        this.modal.dialog3=false
+        let result=this.allData.Products.find((x)=>{
+          if(x.id===this.productObj.product){
+            return x
+          }
+        })
+        let x =Object.assign({},result,{orderid: this.modelObj.id,quantity:this.productObj.quantity,id:this.productObj.id,product:this.productObj.product})
+        x.total = x.saleprice * x.quantity
+        this.orderProductObj.list.find((y,index)=>{
+          if(y.id===x.id){
+          this.orderProductObj.list.splice(index,1,x)
+          }
+        })
+        this.$refs.productFormRef.$refs.validateForm.reset()
+      }
     },
     deleteOrder(item){
       this.allData.Orders.forEach((x,index)=>{

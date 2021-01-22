@@ -60,7 +60,7 @@ export default {
           },
           color: () => {return 'success'},
           icon:'mdi-delete',
-          click:(item)=>{ this.removeEmployee(item)}
+          click:(item)=>{ this.removeCustomers(item)}
         }],
         // editProp: 'email',
         // editURL: (item) => { console.log(item) }
@@ -144,7 +144,7 @@ export default {
           name: 'delete_btn',
           color: 'error',
           label: 'Delete',
-          click: ()=>this.deleteEmployee(),
+          click: ()=>this.removeCustomers(this.modelObj),
           is_show: this.updateBtn,
 
         }]
@@ -207,18 +207,14 @@ export default {
       this.setCustomers()
       this.$refs.formRef.$refs.validateForm.reset()
     },
-    removeEmployee(data){
-      this.Customers.forEach((x,index)=>{
-        x.id===data.id ? this.Customers.splice(index,1) : false
-      })
-      this.setCustomers()
-    },
     removeCustomers(data){
-      for(let i in data.ids){
-        this.Customers.forEach((x,index)=>{
-          x.id===data.ids[i] ? this.Customers.splice(index,1) : false
-        })
+      if(this.dialog){
+        this.$refs.formRef.$refs.validateForm.reset()
+        this.dialog= false
+        this.modelObj ={}
       }
+      let x = this.removeRecords(data, this.Customers)
+      this.Customers = x.slice()
       this.setCustomers()
       this.datalistObj.selection=[]
     }

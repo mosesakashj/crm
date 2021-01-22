@@ -90,7 +90,6 @@
           <slot name="expand" v-else></slot>
         </td>
       </template> -->
-
       <template v-slot:[`item.color`]="{ item }">
         <v-chip small :color="item.color" v-if="item.color" :text-color="$formatter.foreGroundColor(item.color)">{{ item.color }}</v-chip>
       </template>
@@ -106,9 +105,8 @@
       </template>
 
       <template v-slot:[`item.image`]="{ item }">
-        <v-img :src="item.image" v-if="item" height="100px" contain></v-img>
+        <v-img :src="item.image" v-if="item" height="100px" contain width="150px"></v-img>
       </template>
-
     </v-data-table>
   </div>
 </template>

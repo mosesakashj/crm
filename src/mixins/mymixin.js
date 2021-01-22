@@ -28,7 +28,6 @@ export default{
         case 'Text' :
           result= [
             v => !!v || 'Field is required',
-            // v => (v && v.length <= 10) || 'Name must be less than 10 characters',
           ]
        break
         default :
@@ -36,6 +35,19 @@ export default{
        break
       }
       return result
+    },
+    removeRecords(data, array){
+      if(!data.ids) { 
+        data.ids=[]
+        data.ids.push(data.id)
+      }
+      for(let i in data.ids){
+        array.forEach((x,index)=>{
+          x.id===data.ids[i] ? array.splice(index,1) : false
+        })
+      }
+      return array
     }
   }
 }
+

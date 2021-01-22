@@ -154,7 +154,7 @@ export default {
           name: 'delete_btn',
           color: 'error',
           label: 'Delete',
-          click: ()=>this.deleteEmployee(),
+          click: ()=>this.removeEmployee(this.modelObj),
           is_show: this.updateBtn,
 
         }]
@@ -226,6 +226,11 @@ export default {
       this.$refs.formRef.$refs.validateForm.reset()
     },
     removeEmployee(data){
+      if(this.dialog){
+        this.dialog=false
+        this.modelObj={}
+        this.$refs.formRef.$refs.validateForm.reset()
+      }
       this.Employees.forEach((x,index)=>{
         x.id===data.id ? this.Employees.splice(index,1) : false
       })

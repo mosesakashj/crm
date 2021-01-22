@@ -2,7 +2,7 @@
   <div :style="`height:${height}px`">
     <section>
       <v-row >
-        <v-col :cols="!allAccessFor.includes($store.state.activeUser.role) ? '9': '12'">
+        <v-col cols="12">
           <v-card>
           <v-row>
               <v-col cols="4">
@@ -18,7 +18,7 @@
           </v-row>
         </v-card>
         </v-col>
-        <v-col cols="3" v-if="!allAccessFor.includes($store.state.activeUser.role)">
+        <!-- <v-col cols="3" v-if="!allAccessFor.includes($store.state.activeUser.role)">
         <v-card v-for="(i,index) in EmployeeOrder" :key="index">
           <v-img height="100" src="https://cdn.vuetifyjs.com/images/cards/cooking.png"></v-img>
             <v-card-title class="pa-2"> Order Code : {{i.code}} </v-card-title>
@@ -41,7 +41,7 @@
         <v-card v-if="!EmployeeOrder.length">
           <v-card-title> No Orders Assigned for You...</v-card-title>
         </v-card>
-      </v-col>
+      </v-col> -->
       </v-row>
     </section>
     <section v-if="allAccessFor.includes($store.state.activeUser.role)">
@@ -75,7 +75,7 @@ export default {
       Employees:[],
       Products:[],
       Orders:[],
-      chartData:{'2020-12-12':2, '2020-12-13':5,'2020-12-14':9,},
+      chartData:{'2020-12-12':45, '2020-12-13':5,'2020-12-14':78,},
       ProductsStatus:{'Total Order':0,'Initialized':0,'On Going':0, 'Completed':0},
       isUpdated:false,
       status:['Initialized','On Going', 'Completed'],

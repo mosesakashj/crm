@@ -59,7 +59,7 @@ export default {
           },
           color: () => {return 'success'},
           icon:'mdi-delete',
-          click:(item)=>{ this.removeProduct(item)}
+          click:(item)=>{ this.removeProducts(item)}
         }],
       }
     }
@@ -137,7 +137,7 @@ export default {
           name: 'delete_btn',
           color: 'error',
           label: 'Delete',
-          click: ()=>this.deleteEmployee(),
+          click: ()=>this.removeProducts(this.modelObj),
           is_show: this.updateBtn,
 
         }]
@@ -195,23 +195,19 @@ export default {
     },updateProduct(){
       this.dialog=false
       this.Products.forEach((x,index)=>{
-          x.id===this.modelObj.id ? this.Products.splice(index,1,this.modelObj) : false
+        x.id===this.modelObj.id ? this.Products.splice(index,1,this.modelObj) : false
       })
       this.setProducts()
       this.$refs.formRef.$refs.validateForm.reset()
     },
-    removeProduct(data){
-      this.Products.forEach((x,index)=>{
-        x.id===data.id ? this.Products.splice(index,1) : false
-      })
-      this.setProducts()
-    },
     removeProducts(data){
-      for(let i in data.ids){
-        this.Products.forEach((x,index)=>{
-          x.id===data.ids[i] ? this.Products.splice(index,1) : false
-        })
+      if(this.dialog){
+        this.$refs.formRef.$refs.validateForm.reset()
+        this.dialog= false
+        this.modelObj ={}
       }
+      let x = this.removeRecords(data, this.Products)
+      this.Products = x.slice()
       this.setProducts()
       this.datalistObj.selection=[]
     }
