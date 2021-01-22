@@ -279,33 +279,33 @@ export default {
     },
     updateProducts(){
       this.modal.dialog3=false
-      let result=this.allData.Products.find((x)=>{
-        if(x.code===this.productObj.product){
-          return x
+      let result=this.allData.Products.find((product)=>{
+        if(product.code===this.productObj.product){
+          return product
         }
       })
-      let x =Object.assign({},result,{orderid: this.modelObj.id,quantity:this.productObj.quantity,id:this.productObj.id})
-      x.total = x.saleprice * x.quantity
+      let product =Object.assign({},result,{orderid: this.modelObj.id,quantity:this.productObj.quantity,id:this.productObj.id})
+      product.total = product.saleprice * product.quantity
       this.orderProductObj.list.find((y,index)=>{
-        if(y.id===x.id){
-         this.orderProductObj.list.splice(index,1,x)
+        if(y.id===product.id){
+         this.orderProductObj.list.splice(index,1,product)
         }
       })
       this.$refs.productFormRef.$refs.validateForm.reset()
     },
     deleteOrder(item){
-      this.allData.Orders.forEach((x,index)=>{
-           item.id === x.id ? this.allData.Orders.splice(index,1) : false
+      this.allData.Orders.forEach((order,index)=>{
+           item.id === order.id ? this.allData.Orders.splice(index,1) : false
       })
-      this.allData.OrderProducts.forEach((x,index)=>{
-            item.id === x.orderid ?  this.allData.OrderProducts.splice(index,1) : false
+      this.allData.OrderProducts.forEach((orderproduct,index)=>{
+            item.id === orderproduct.orderid ?  this.allData.OrderProducts.splice(index,1) : false
       })
       this.setOrders()
     },
     deleteProduct(item){
-      this.orderProductObj.list.forEach((x,xindex)=>{ 
-          this.allData.OrderProducts.forEach((y,index)=>{
-            x.orderid === item.orderid && x.id === item.id ? (this.allData.OrderProducts.splice(index,1),this.orderProductObj.list.splice(xindex,1)) : false
+      this.orderProductObj.list.forEach((tempOrderProduct,tempOrderProductIndex)=>{ 
+          this.allData.OrderProducts.forEach((orderProduct,orderProductIndex)=>{
+            tempOrderProduct.orderid === item.orderid && tempOrderProduct.id === item.id ? (this.allData.OrderProducts.splice(orderProductIndex,1),this.orderProductObj.list.splice(tempOrderProductIndex,1)) : false
         })
       })
       this.setOrders()
