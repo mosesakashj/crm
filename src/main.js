@@ -6,7 +6,7 @@ import vuetify from './plugins/vuetify';
 import 'roboto-fontface/css/roboto/roboto-fontface.css'
 import '@mdi/font/css/materialdesignicons.css'
 import '@mdi/js'
-import MyMixin from '../src/mixins/mymixin.js'
+import MyMixin from '../src/mixins/CustomMethods.js'
 import Chart from "chart.js";
 import Chartkick from "vue-chartkick";
 import './registerServiceWorker'

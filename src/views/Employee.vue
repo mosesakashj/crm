@@ -60,10 +60,8 @@ export default {
           },
           color: () => {return 'success'},
           icon:'mdi-delete',
-          click:(item)=>{ this.removeEmployee(item)}
+          click:(item)=>{ this.removeEmployees(item)}
         }],
-        // editProp: 'email',
-        // editURL: (item) => { console.log(item) }
       }
     }
   },
@@ -77,98 +75,23 @@ export default {
       return {
         title: !this.updateBtn ? 'New User' : 'Edit User',
         properties: [ 
-        {
-          model: 'name',
-          type:  this.formType.TEXT,
-          rules:  [v => !!v || 'Field is required'],
-          label: 'Name',
-          class: 'lg3 sm6',
-          'hide-details': false
-        }, {
-          model: 'email',
-          type: this.formType.TEXT,
-          rules: [
-            v => !!v || 'E-mail is required',
-            v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
-          ],
-          label: 'Email',
-          class: 'lg3 sm6',
-          'hide-details': false
-        }, {
-          model: 'phone',
-          type: this.formType.TEXT,
-          rules: [value => !!value || 'Value Must Be Filled',value => (!isNaN(value)) || 'Value Must Be Number' ],
-          label: 'Phone No',
-          class: 'lg3 sm6',
-          'hide-details': false
-        },
-        {
-          model: 'password',
-          type: this.formType.TEXT,
-          rules: [value => !!value || 'Value Must Be Filled'],
-          label: 'Password',
-          class: 'lg3 sm6',
-          'hide-details': false
-        },{
-          model: 'role',
-          rules: [value => !!value || 'Value Must Be Selected'],
-          type: this.formType.SELECT,
-          items:['admin','manager','employee'],
-          class: 'lg3 sm6 pt-2',
-          label: 'Role',
-          'hide-details': false
-
-        },{
-          model: 'profile',
-          type: this.formType.FILES,
-          rules: [],
-          label: 'Profile Picture',
-          class: 'lg6 sm6',
-          accept:'',
-          is_show:true,
-          multiple:'false',
-          change:()=>{if(this.modelObj.profile) this.createImage(this.modelObj.profile[0]) },
-        }],
-        buttons: [{
-          name: 'action_handler',
-          color: 'success',
-          label: 'Save',
-          click: () => this.addEmployee(),
-          loading: this.loading,
-          is_show: !this.updateBtn
-        }, {
-          name: 'action_handler_update',
-          color: 'primary',
-          label: 'Update & Close',
-          click: () => this.updateEmployee(),
-          loading: this.loading,
-          is_show: this.updateBtn
-        }, {
-          name: 'back_to_list',
-          color: 'info',
-          click: () => this.closeform(),
-          label: 'cancel',
-          // to: '/company',
-          is_show: true
-        }, {
-          name: 'delete_btn',
-          color: 'error',
-          label: 'Delete',
-          click: ()=>this.removeEmployee(this.modelObj),
-          is_show: this.updateBtn,
-
-        }]
+        {model: 'name', type:  this.formType.TEXT, rules:  [v => !!v || 'Field is required'], label: 'Name', class: 'lg3 sm6', 'hide-details': false }, 
+        { model: 'email', type: this.formType.TEXT, rules: this.findValidationRules('Email'), label: 'Email', class: 'lg3 sm6', 'hide-details': false}, 
+        { model: 'phone', type: this.formType.TEXT, rules: this.findValidationRules('Number'), label: 'Phone No', class: 'lg3 sm6', 'hide-details': false},
+        {model: 'password', type: this.formType.TEXT, rules: [value => !!value || 'Value Must Be Filled'], label: 'Password', class: 'lg3 sm6', 'hide-details': false },
+        { model: 'role', rules: [value => !!value || 'Value Must Be Selected'], type: this.formType.SELECT, items:['admin','manager','employee'], class: 'lg3 sm6 pt-2', label: 'Role', 'hide-details': false},
+        { model: 'profile', type: this.formType.FILES, rules: [], label: 'Profile Picture', class: 'lg6 sm6', accept:'', is_show:true, multiple:'false', change:()=>{if(this.modelObj.profile) this.createImage(this.modelObj.profile[0]) },}
+        ],
+        buttons: [
+        { name: 'action_handler', color: 'success', label: 'Save', click: () => this.addEmployee(), loading: this.loading, is_show: !this.updateBtn }, 
+        { name: 'action_handler_update', color: 'primary', label: 'Update & Close', click: () => this.updateEmployee(), loading: this.loading, is_show: this.updateBtn }, 
+        { name: 'back_to_list', color: 'info', click: () => this.closeform(), label: 'cancel', is_show: true }, 
+        { name: 'delete_btn', color: 'error', label: 'Delete', click: ()=>this.removeEmployees(this.modelObj), is_show: this.updateBtn,}
+        ]
       }
     },
-    // headers () {
-    //   return [ {text: 'Code',align: 'start',sortable: false,value: 'id'},
-    //     { text: 'Name', value: 'name' },
-    //     { text: 'Email', value: 'email' },
-    //     { text: 'Role', value: 'role' },
-    //     { text: 'Image', value: 'image',width:'200px' },
-    //     { text: 'Actions', value: 'actions', sortable: false,width:'200px' },]
-    // }
-  },mounted(){
+  },
+  mounted(){
       this.getEmployees(),
       this.$root.$on('deleteItems',(data)=>{
         this.removeEmployees(data)
@@ -225,30 +148,18 @@ export default {
       this.setEmployees()
       this.$refs.formRef.$refs.validateForm.reset()
     },
-    removeEmployee(data){
-      if(this.dialog){
+    removeEmployees(data){
+         if(this.dialog){
         this.dialog=false
         this.modelObj={}
         this.$refs.formRef.$refs.validateForm.reset()
       }
-      this.Employees.forEach((x,index)=>{
-        x.id===data.id ? this.Employees.splice(index,1) : false
-      })
-      this.setEmployees()
-    },
-    removeEmployees(data){
-      for(let i in data.ids){
-        this.Employees.forEach((x,index)=>{
-          x.id===data.ids[i] ? this.Employees.splice(index,1) : false
-        })
-      }
+      let x = this.removeRecords(data, this.Employees)
+      this.Employees = x.slice()
       this.setEmployees()
       this.datalistObj.selection=[]
     }
   },
-  watch:{
-     
-    },
   beforeDestroy () {
     this.$root.$off('deleteItems')
     this.$root.$off('addItems')

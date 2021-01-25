@@ -1,40 +1,29 @@
 <template>
   <div>
-       <!-- foRM tO tO cREATE A nEW oRDER -->
-        <v-dialog v-model="modal.dialog" fullscreen  transition="dialog-bottom-transition">
-        <v-card tile>
-          <v-toolbar dark >
-            <v-btn icon dark @click="closeform()"><v-icon>mdi-close</v-icon></v-btn>
-            <v-toolbar-title>{{formTitle}}</v-toolbar-title>
-            <v-spacer></v-spacer>
-          </v-toolbar>
-          <v-card-text>
-
-             <form-data :references.sync="formReferences" :model="modelObj" ref="formRef"></form-data>
-
-            <v-divider></v-divider>
-            <v-row class="pa-5">
-              <v-dialog v-model="modal.dialog3" persistent max-width="600px">
-                <v-card>
-                  <v-card-text class="pa-3">
-                        <form-data :references.sync="productReferences" :model="productObj" ref="productFormRef"></form-data>
-                  </v-card-text>
-                </v-card>
-              </v-dialog>
-            </v-row>
-            <v-card>
-
-              <data-list :payload="orderProductObj"></data-list>
-          
-            </v-card>
-          </v-card-text>
-          <div style="flex: 1 1 auto;"></div>
-        </v-card>
-      </v-dialog>
-      
-<!-- ............................................. -->
-
-      <data-list :payload="datalistObj"></data-list>
+    <v-dialog v-model="modal.dialog" fullscreen  transition="dialog-bottom-transition">
+      <v-card tile>
+        <v-toolbar dark >
+          <v-btn icon dark @click="closeform('ORDER')"><v-icon>mdi-close</v-icon></v-btn>
+          <v-toolbar-title>{{formReferences.title}}</v-toolbar-title>
+          <v-spacer></v-spacer>
+        </v-toolbar>
+        <v-card-text>
+            <form-data :references.sync="formReferences" :model="formTemplateObj" ref="formRef"></form-data>
+          <v-divider></v-divider>
+          <v-row class="pa-5">
+            <v-dialog v-model="modal.dialog3" persistent max-width="600px">
+              <v-card>
+                      <form-data :references.sync="productReferences" :model="productObj" ref="productFormRef"></form-data>
+              </v-card>
+            </v-dialog>
+          </v-row>
+          <v-card>
+            <data-list :payload="orderProductObj"></data-list>
+          </v-card>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+    <data-list :payload="datalistObj"></data-list>
     <v-snackbar v-model="snackbar.state">{{ snackbar.title }}</v-snackbar>
   </div>
 </template>
@@ -46,12 +35,8 @@ export default {
   data () {
     return {
       dialog:false,
-      modelObj: {
-        products:[]
-      },
-      productObj: {
-      },
-      formTitle:'',
+      formTemplateObj: { products:[] },
+      productObj: { },
       loading: false,
       updateBtn:false,
       productUpdateBtn:false,
@@ -59,13 +44,11 @@ export default {
       allData:{Products:[], Users:[], Employees:[], Orders:[],OrderProducts:[],userOrderProducts:[]},
       allAccessFor:['admin','manager'],
       snackbar:{title:'Give Valid Details..',state:false},
-      product:{},
-      quantity:null,
       orderProductObj:{
         isHeader: true,
         list: [],
         selection: [],
-        addNewRoute: () =>this.openProductform(),
+        addNewRoute: () =>this.openform('ORDER_PRODUCT'),
         headers: [
           { text: 'Product', value: 'name' },
           { text: 'Unit Price', value: 'saleprice'},
@@ -96,26 +79,23 @@ export default {
           { text: 'Customer', value: 'customer' },
           { text: 'Managing By', value: 'employee'},
           { text: 'Date', value: 'date' },
-          // { text: 'Total Amount',value:'total'},
           { text: 'Status', value: 'status'},
-          { text: 'Actions',value:'actions'},],
+          { text: 'Actions',value:'actions'}],
         list: [],
         loading: false,
-        addNewRoute: () => this.openform(),
+        addNewRoute: () => this.openform('ORDER'),
         actionsList:[
           {
-          is_show: () => { return true},
-          color: () => { return 'success'},
-          icon:'mdi-pencil',
-          click:(item)=>{this.editOrder(item)}
+            is_show: () => { return true},
+            color: () => { return 'success'},
+            icon:'mdi-pencil',
+            click:(item)=>{this.editOrder(item)}
         },
         {
-          is_show: () => {
-           return this.allAccessFor.includes(this.$store.state.activeUser.role) ?  true : false
-          },
-          color: () => {return 'success'},
+          is_show: () => { return this.allAccessFor.includes(this.$store.state.activeUser.role) ?  true : false },
+          color: () => { return 'success'},
           icon:'mdi-delete',
-          click:(item)=>{ this.deleteOrder(item)}
+          click:(item)=>{ this.removeOrders(item)}
         }],
       }
     }
@@ -138,7 +118,7 @@ export default {
         buttons: [
          {name: 'action_handler', color: 'success',label: 'Save',click: () => this.addOrders(),loading: this.loading,is_show: !this.updateBtn},
          {name: 'action_handler_update',color: 'primary',label: 'Update & Close',click: () => this.updateOrders(),loading: this.loading,is_show: this.updateBtn}, 
-         {name: 'back_to_list',color: 'info',click: () => this.closeform(),label: 'cancel',is_show: true,},
+         {name: 'back_to_list',color: 'info',click: () => this.closeform('ORDER'),label: 'cancel',is_show: true,},
         //  {name: 'delete_btn',color: 'error',label: 'Delete',click: ()=>this.deleteOrder(),is_show: this.updateBtn,}
         ]
       }
@@ -147,30 +127,23 @@ export default {
       return {
         title: !this.productUpdateBtn ? 'New Product' : 'Edit Product',
         properties: [ 
-        {model: 'product',type: this.formType.SELECT, select_text:'name', select_value: 'id', items:this.allData.Products.slice(), class: 'lg3 sm6 pt-2', label: 'Select Product','hide-details': false, rules: [value => !!value || 'Value Must Be Selected'],},
+        {model: 'product',type: this.formType.SELECT, select_text:'name', select_value: 'id', items:this.allData.Products.slice(), class: 'lg3 sm6 pt-2', label: 'Select Product','hide-details': false,rules: [value => !!value || 'Value Must Be Selected'],},
         {model: 'quantity', rules: [value => !!value || 'Value Must Be Selected'], type: this.formType.TEXT, class: 'lg3 sm6 pt-2',label: 'Quantity','hide-details': false}
         ],
         buttons: [
          {name: 'action_handler', color: 'success',label: 'Save',click: () => this.addProducts(),is_show: !this.productUpdateBtn},
          {name: 'action_handler_update',color: 'primary',label: 'Update & Close',click: () => this.updateProducts(),is_show: this.productUpdateBtn}, 
-         {name: 'back_to_list',color: 'info',click: () => this.closeProductform(),label: 'cancel',is_show: true,},
+         {name: 'back_to_list',color: 'info',click: () => this.closeform('ORDER_PRODUCT'),label: 'cancel',is_show: true,},
         //  {name: 'delete_btn',color: 'error',label: 'Delete',click: ()=>this.deleteProduct(),is_show: this.productUpdateBtn,}
         ]
       }
     }
-  },mounted(){
+  },
+  mounted(){
       this.getAllRecords()
       this.getOrderdata()
-      this.$root.$on('deleteItems',(data)=>{console.log(data)
-      for(let i in data.ids){
-      this.allData.Orders.forEach((x,index)=>{
-            x.id===data.ids[i] ? this.allData.Orders.splice(index,1) : false
-          })
-      this.allData.OrderProducts.forEach((x,index)=>{
-            x.orderid===data.ids[i] ? this.allData.OrderProducts.splice(index,1) : false
-         })
-        }
-        this.datalistObj.selection=[]
+      this.$root.$on('deleteItems',(data)=>{
+        this.removeOrders(data)
         this.setOrders()
       })
     },
@@ -194,78 +167,74 @@ export default {
       localStorage.setItem("OrderProductsdata", JSON.stringify(this.allData.OrderProducts))
       this.getOrderdata()
     },
-    openform(){
-      this.updateBtn = false
-      this.modal.dialog=true
-      this.modelObj={}
-      this.modelObj.id=this.getRandomId()
-      console.log(this.modelObj.id)
-      this.formTitle='Add Order'
-    },openProductform(){
-      this.modal.dialog3=true
-      this.productUpdateBtn=false
+    openform(type){
+      if(type === 'ORDER') {
+        this.updateBtn = false
+        this.modal.dialog=true
+        this.formTemplateObj={}
+        this.formTemplateObj.id=this.getRandomId()
+      } else {
+         this.modal.dialog3=true
+         this.productUpdateBtn=false
+      }
     },
-    closeform(){
+    closeform(type){
+      if(type === 'ORDER'){
       this.modal.dialog=false
+      this.modal.dialog3=false
       this.orderProductObj.list=[]
       this.$refs.formRef.$refs.validateForm.reset()
-    },
-    closeProductform(){
-      this.modal.dialog3=false
-      this.$refs.productFormRef.$refs.validateForm.reset()
+      } else {
+        this.modal.dialog3=false
+        this.$refs.productFormRef.$refs.validateForm.reset()
+      }
     },
     addOrders(){
       if (this.$refs.formRef.$refs.validateForm.validate()) {
         if(this.orderProductObj.list.length){
-        this.modal.dialog=false
-        this.allData.Orders.push(this.modelObj)
-        this.orderProductObj.list.forEach(x=>{ this.allData.OrderProducts.push(x)})
-        this.orderProductObj.list=[]
-        this.setOrders()
-        this.$refs.formRef.$refs.validateForm.reset()
-        } else this.snackbar={title:'Add Atleat One Product...',state:true}
-      } else this.snackbar={title:'Give Valid Details...',state:true}
+          this.modal.dialog=false
+          this.allData.Orders.push(this.formTemplateObj)
+          this.orderProductObj.list.forEach(x=>{ this.allData.OrderProducts.push(x)})
+          this.orderProductObj.list=[]
+          this.setOrders()
+          this.$refs.formRef.$refs.validateForm.reset()
+        }else this.snackbar={title:'Add Atleast One Product...',state:true}
+      }else this.snackbar={title:'Give Valid Details...',state:true}
     },
     addProducts(){
-      if (this.$refs.productFormRef.$refs.validateForm.validate()) {
       this.modal.dialog3=false
-      console.log(this.productObj.product)
-      let result=this.allData.Products.find(x=>{
-        if(x.id===this.productObj.product){
-          return x
+      let result=this.allData.Products.find(product=>{
+        if(product.id===this.productObj.product){
+          return product
         }
       })
-      let x =Object.assign({},result,{id:this.getRandomId(),orderid: this.modelObj.id,quantity:this.productObj.quantity, product:this.productObj.product})
-      x.total = x.saleprice * x.quantity
-      this.orderProductObj.list.push(x)
+      let product = Object.assign({},result,{id:this.getRandomId(),orderid: this.formTemplateObj.id,quantity:this.productObj.quantity,product:this.productObj.product})
+      product.total = product.saleprice * product.quantity
+      this.orderProductObj.list.push(product)
       this.$refs.productFormRef.$refs.validateForm.reset()
-      }
     },
     editOrder(data){
-      this.formTitle='Edit Order'
       this.updateBtn=true
       this.modal.dialog=true
-      this.modelObj=Object.assign({},data)
+      this.formTemplateObj=Object.assign({},data)
       this.orderProductObj.list=[]
-      this.allData.OrderProducts.forEach(x=>{
-        x.total = x.saleprice * x.quantity
-       if( x.orderid === this.modelObj.id ){
-         this.orderProductObj.list.includes(x) ? false : this.orderProductObj.list.push(x)
-       }
+      this.allData.OrderProducts.forEach(orderProduct=>{
+        orderProduct.total = orderProduct.saleprice * orderProduct.quantity
+        if( orderProduct.orderid === this.formTemplateObj.id ){
+          this.orderProductObj.list.includes(orderProduct) ? false : this.orderProductObj.list.push(orderProduct)
+        }
       })
     },
     editProducts(data){
       this.modal.dialog3=true
       this.productUpdateBtn=true
-      this.productObj = Object.assign({},data)
-      // this.productObj.product= data.id
-      console.log(data, this.productObj)
+      this.productObj=Object.assign({},data)
     },
     updateOrders(){
-       if (this.$refs.formRef.$refs.validateForm.validate()) {
+      if (this.$refs.formRef.$refs.validateForm.validate()) {
         if(this.orderProductObj.list.length){
         this.allData.Orders.forEach((x,index)=>{
-          x.id === this.modelObj.id ? this.allData.Orders.splice(index,1,this.modelObj) : false
+          x.id === this.formTemplateObj.id ? this.allData.Orders.splice(index,1,this.formTemplateObj) : false
         })
         this.orderProductObj.list.forEach((x, xindex)=>{ 
           if(this.allData.OrderProducts.length){
@@ -281,55 +250,42 @@ export default {
         this.modal.dialog=false
         this.setOrders()
         this.$refs.formRef.$refs.validateForm.reset()
-        } else this.snackbar={title:'Add Atleat One Product...',state:true}
-      } else this.snackbar={title:'Give Valid Details...',state:true}
+        }else this.snackbar={title:'Add Atleast One Product...',state:true}
+      }else this.snackbar={title:'Give Valid Details...',state:true}
     },
     updateProducts(){
       if (this.$refs.productFormRef.$refs.validateForm.validate()) {
         this.modal.dialog3=false
-        let result=this.allData.Products.find((x)=>{
-          if(x.id===this.productObj.product){
-            return x
+        let result=this.allData.Products.find((product)=>{
+          if(product.id===this.productObj.product){
+            return product
           }
         })
-        let x =Object.assign({},result,{orderid: this.modelObj.id,quantity:this.productObj.quantity,id:this.productObj.id,product:this.productObj.product})
-        x.total = x.saleprice * x.quantity
-        this.orderProductObj.list.find((y,index)=>{
-          if(y.id===x.id){
-          this.orderProductObj.list.splice(index,1,x)
+        let product =Object.assign({},result,{orderid: this.formTemplateObj.id,quantity:this.productObj.quantity,id:this.productObj.id,product:this.productObj.product})
+        product.total = product.saleprice * product.quantity
+        this.orderProductObj.list.find((tempOrderProduct,index)=>{
+          if(tempOrderProduct.id===product.id){
+          this.orderProductObj.list.splice(index,1,product)
           }
         })
         this.$refs.productFormRef.$refs.validateForm.reset()
       }
     },
-    deleteOrder(item){
-      this.allData.Orders.forEach((x,index)=>{
-           item.id === x.id ? this.allData.Orders.splice(index,1) : false
-      })
-      this.allData.OrderProducts.forEach((x,index)=>{
-            item.id === x.orderid ?  this.allData.OrderProducts.splice(index,1) : false
-      })
-      this.setOrders()
-    },
     deleteProduct(item){
-      this.orderProductObj.list.forEach((x,xindex)=>{ 
-          this.allData.OrderProducts.forEach((y,index)=>{
-            x.orderid === item.orderid && x.id === item.id ? (this.allData.OrderProducts.splice(index,1),this.orderProductObj.list.splice(xindex,1)) : false
+      this.orderProductObj.list.forEach((tempOrderProduct,tempOrderProductIndex)=>{ 
+          this.allData.OrderProducts.forEach((orderProduct,orderProductIndex)=>{
+            tempOrderProduct.orderid === item.orderid && tempOrderProduct.id === item.id ? (this.allData.OrderProducts.splice(orderProductIndex,1),this.orderProductObj.list.splice(tempOrderProductIndex,1)) : false
         })
       })
       this.setOrders()
-    },removeOrders(data){
-         for(let i in data.ids){
-           this.allData.Orders.forEach((x,index)=>{
-           data.ids[i] === x.id ? this.allData.Orders.splice(index,1) : false
-           })
-         }
-         for(let i in data.ids){
-           this.allData.OrderProducts.forEach((x,index)=>{
-            data.ids[i] === x.orderid ?  this.allData.OrderProducts.splice(index,1) : false
-           })
-         }
-         this.setOrders()
+    },
+    removeOrders(data){
+      let x = this.removeRecords(data, this.allData.Orders)
+      this.allData.Orders = x.slice()
+      let y = this.removeRecords(data, this.allData.OrderProducts)
+      this.allData.OrderProducts = y.slice()
+      if(this.datalistObj.selection.length) this.datalistObj.selection=[]
+      this.setOrders()
     }
   },
   beforeDestroy () {

@@ -43,7 +43,8 @@ export default{
       }
       for(let i in data.ids){
         array.forEach((x,index)=>{
-          x.id===data.ids[i] ? array.splice(index,1) : false
+          if(x.orderid) x.orderid===data.ids[i] ? array.splice(index,1) : false
+          else x.id===data.ids[i] ? array.splice(index,1) : false
         })
       }
       return array

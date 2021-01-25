@@ -54,10 +54,8 @@ export default {
           click:(item)=>{this.editProduct(item)}
         },
         {
-          is_show: () => {
-           return this.allAccessFor.includes(this.$store.state.activeUser.role) ?  true : false
-          },
-          color: () => {return 'success'},
+          is_show: () => { return this.allAccessFor.includes(this.$store.state.activeUser.role) ?  true : false },
+          color: () => { return 'success'},
           icon:'mdi-delete',
           click:(item)=>{ this.removeProducts(item)}
         }],
@@ -74,76 +72,22 @@ export default {
       return {
         title: !this.updateBtn ? 'New Product' : 'Edit product',
         properties: [ 
-        {
-          model: 'name',
-          type:  this.formType.TEXT,
-          rules:  [v => !!v || 'Field is required'],
-          label: 'Product name',
-          class: 'lg4 sm6',
-          'hide-details': false
-        }, {
-          model: 'netprice',
-          type: this.formType.TEXT,
-          rules: [value => !!value || 'Value Must Be Filled',value => (!isNaN(value)) || 'Value Must Be Number' ],
-          label: 'NetPrice',
-          class: 'lg4 sm6',
-          'hide-details': false
-        }, {
-          model: 'saleprice',
-          type: this.formType.TEXT,
-          rules: [value => !!value || 'Value Must Be Filled',value => (!isNaN(value)) || 'Value Must Be Number' ],
-          label: 'SalePrice',
-          class: 'lg4 sm6',
-          'hide-details': false
-        },{
-          model: 'description',
-          rules: [value => !!value || 'Value Must Be Selected'],
-          type: this.formType.TEXTAREA,
-          class: 'lg6 sm6 pt-2',
-          label: 'Description',
-          'hide-details': false
-        },{
-          model: 'profile',
-          type: this.formType.FILES,
-          rules: [],
-          label: 'Image',
-          class: 'lg6 sm6',
-          accept:'',
-          is_show:true,
-          multiple:'false',
-          change:()=>{ if(this.modelObj.profile) this.createImage(this.modelObj.profile[0]) },
-        }],
-        buttons: [{
-          name: 'action_handler',
-          color: 'success',
-          label: 'Save',
-          click: () => this.addProduct(),
-          loading: this.loading,
-          is_show: !this.updateBtn
-        }, {
-          name: 'action_handler_update',
-          color: 'primary',
-          label: 'Update & Close',
-          click: () => this.updateProduct(),
-          loading: this.loading,
-          is_show: this.updateBtn
-        }, {
-          name: 'back_to_list',
-          color: 'info',
-          click: () => this.closeform(),
-          label: 'cancel',
-          is_show: true
-        }, {
-          name: 'delete_btn',
-          color: 'error',
-          label: 'Delete',
-          click: ()=>this.removeProducts(this.modelObj),
-          is_show: this.updateBtn,
-
-        }]
+        {model: 'name', type:  this.formType.TEXT, rules:  [v => !!v || 'Field is required'], label: 'Product name', class: 'lg4 sm6', 'hide-details': false },
+        {model: 'netprice', type: this.formType.TEXT, rules: [value => !!value || 'Value Must Be Filled',value => (!isNaN(value)) || 'Value Must Be Number' ], label: 'NetPrice', class: 'lg4 sm6', 'hide-details': false },
+        {model: 'saleprice', type: this.formType.TEXT, rules: [value => !!value || 'Value Must Be Filled',value => (!isNaN(value)) || 'Value Must Be Number' ], label: 'SalePrice', class: 'lg4 sm6', 'hide-details': false },
+        {model: 'description', rules: [value => !!value || 'Value Must Be Selected'], type: this.formType.TEXTAREA, class: 'lg6 sm6 pt-2', label: 'Description', 'hide-details': false },
+        {model: 'profile', type: this.formType.FILES, rules: [], label: 'Image', class: 'lg6 sm6', accept:'', is_show:true, multiple:'false',change:()=>{ if(this.modelObj.profile) this.createImage(this.modelObj.profile[0]) },}
+        ],
+        buttons: [
+          {name: 'action_handler',color: 'success',label: 'Save',click: () => this.addProduct(),loading: this.loading,is_show: !this.updateBtn}, 
+          {name: 'action_handler_update', color: 'primary',label: 'Update & Close', click: () => this.updateProduct(),loading: this.loading,is_show: this.updateBtn}, 
+          {name: 'back_to_list',color: 'info',click: () => this.closeform(),label: 'cancel',is_show: true}, 
+          {name: 'delete_btn',color: 'error',label: 'Delete',click: ()=>this.removeProducts(this.modelObj),is_show: this.updateBtn,}
+        ]
       }
     },
-  },mounted(){
+  },
+  mounted(){
       this.getProducts(),
       this.$root.$on('deleteItems',(data)=>{
         this.removeProducts(data)
@@ -192,7 +136,8 @@ export default {
       this.updateBtn=true
       this.dialog=true
       this.modelObj=Object.assign({},data)
-    },updateProduct(){
+    },
+    updateProduct(){
       this.dialog=false
       this.Products.forEach((x,index)=>{
         x.id===this.modelObj.id ? this.Products.splice(index,1,this.modelObj) : false
