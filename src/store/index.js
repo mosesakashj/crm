@@ -59,6 +59,7 @@ export default new Vuex.Store({
     getActiveUser(state){
       if(localStorage.getItem('activeUser')){
         state.activeUser = JSON.parse(localStorage.getItem('activeUser'))
+        delete state.activeUser.password
         state.authenticated=true
       }
     }

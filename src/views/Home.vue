@@ -12,7 +12,6 @@
         <v-tour name="myTour" :steps="steps"></v-tour>
       </v-card>
     </v-row>
-    <v-snackbar v-model="snackbar" color="red--text">{{ text }}</v-snackbar>
   </div>
 </template>
 <script>
@@ -23,11 +22,10 @@ export default {
       form:{username:'',password:'',admin:''},
       text:'',
       color:"red",
-      snackbar:false,
       height:window.innerHeight,
       steps: [
           {
-            target: '#v-step-0',  // We're using document.querySelector() under the hood
+            target: '#v-step-0',
             header: {
               title: 'Get Started',
             },
@@ -57,22 +55,13 @@ export default {
       if(this.form.username && this.form.password)
       {
         this.$store.dispatch('validateUser',{status:true,user:{username:this.form.username,password:this.form.password},admin:this.form.admin})
-        this.$store.state.authenticated ? this.$router.push({ name: 'Dashboard'}) : (this.text=`Invalid Username / Password`,this.color="red")
-        this.snackbar=true
-      }else{
-        this.snackbar=true
-        this.text='Username & Password Must be Filled'
-      }
+        this.$store.state.authenticated ? this.$router.push({ name: 'Dashboard'}) : this.$root.$emit('Invalid Username / Password', true)
+      } else this.$root.$emit('Username & Password Must be Filled', true)
     },
-    reset(){
-      this.$refs.form.reset();
-    }
   },
   mounted(){
     this.$tours['myTour'].start()
   }
 }
 </script>
-<style  scoped>
 
-</style>

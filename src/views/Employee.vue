@@ -12,7 +12,6 @@
        </v-card>
     </v-dialog>
     <data-list :payload="datalistObj"></data-list>
-    <v-snackbar v-model="snackbar.state">{{ snackbar.title }}</v-snackbar>
   </div>
 </template>
 <script>
@@ -31,7 +30,6 @@ export default {
       updateBtn:false,
       Employees:[],
       allAccessFor:['admin','manager'],
-      snackbar:{title:'Give Valid Details..',state:false},
       datalistObj:{
         isHeader: true,
         isHideAdd:false,
@@ -100,7 +98,7 @@ export default {
         this.addEmployee(data)
       })
     },
-    methods:{
+  methods:{
     getEmployees(){
       let x=JSON.parse(localStorage.getItem("employeesdata"))
       x ? this.Employees=x.slice() : this.Employees=[]
@@ -116,7 +114,7 @@ export default {
     },
     closeform(){
       this.dialog=false
-      this.$refs.formRef.$refs.validateForm.reset.length ? this.$refs.formRef.$refs.validateForm.reset() : false
+      this.$refs.formRef.$refs.validateForm.reset()
     },
     createImage(file) {
       if(file){
@@ -132,21 +130,21 @@ export default {
       this.dialog=false
       this.setEmployees()
       this.$refs.formRef.$refs.validateForm.reset()
-      }else{
-        this.snackbar={title:'Give Valid Details...',state:true}
-      }
+      } else this.$root.$emit('AlertUser','Give Valid Details...', true) 
     },
     editEmployee(data){
       this.updateBtn=true
       this.dialog=true
       this.modelObj=Object.assign({},data)
     },updateEmployee(){
-      this.dialog=false
-      this.Employees.forEach((x,index)=>{
-          x.id===this.modelObj.id ? this.Employees.splice(index,1,this.modelObj) : false
-      })
-      this.setEmployees()
-      this.$refs.formRef.$refs.validateForm.reset()
+      if (this.$refs.formRef.$refs.validateForm.validate()) {
+        this.dialog=false
+        this.Employees.forEach((x,index)=>{
+            x.id===this.modelObj.id ? this.Employees.splice(index,1,this.modelObj) : false
+        })
+        this.setEmployees()
+        this.$refs.formRef.$refs.validateForm.reset()
+      } else this.$root.$emit('AlertUser','Give Valid Details...', true) 
     },
     removeEmployees(data){
          if(this.dialog){

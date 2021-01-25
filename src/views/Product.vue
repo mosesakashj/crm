@@ -12,7 +12,6 @@
        </v-card>
     </v-dialog>
     <data-list :payload="datalistObj"></data-list>
-    <v-snackbar v-model="snackbar.state">{{ snackbar.title }}</v-snackbar>
   </div>
 </template>
 <script>
@@ -23,14 +22,12 @@ export default {
   data () {
     return {
       dialog:false,
-      modelObj: {
-        image:null
-      },
+      modelObj: { image:null },
       loading: false,
       updateBtn:false,
       Products:[],
-      allAccessFor:['admin','manager'],
-      snackbar:{title:'Give Valid Details..',state:false},
+      allAccessFor:['admin', 'manager'],
+      snackbar:{ title:'Give Valid Details..', state:false},
       datalistObj:{
         isHeader: true,
         isHideAdd:false,
@@ -73,8 +70,8 @@ export default {
         title: !this.updateBtn ? 'New Product' : 'Edit product',
         properties: [ 
         {model: 'name', type:  this.formType.TEXT, rules:  [v => !!v || 'Field is required'], label: 'Product name', class: 'lg4 sm6', 'hide-details': false },
-        {model: 'netprice', type: this.formType.TEXT, rules: [value => !!value || 'Value Must Be Filled',value => (!isNaN(value)) || 'Value Must Be Number' ], label: 'NetPrice', class: 'lg4 sm6', 'hide-details': false },
-        {model: 'saleprice', type: this.formType.TEXT, rules: [value => !!value || 'Value Must Be Filled',value => (!isNaN(value)) || 'Value Must Be Number' ], label: 'SalePrice', class: 'lg4 sm6', 'hide-details': false },
+        {model: 'netprice', type: this.formType.TEXT, rules: this.findValidationRules('Number'), label: 'NetPrice', class: 'lg4 sm6', 'hide-details': false },
+        {model: 'saleprice', type: this.formType.TEXT, rules: this.findValidationRules('Number'), label: 'SalePrice', class: 'lg4 sm6', 'hide-details': false },
         {model: 'description', rules: [value => !!value || 'Value Must Be Selected'], type: this.formType.TEXTAREA, class: 'lg6 sm6 pt-2', label: 'Description', 'hide-details': false },
         {model: 'profile', type: this.formType.FILES, rules: [], label: 'Image', class: 'lg6 sm6', accept:'', is_show:true, multiple:'false',change:()=>{ if(this.modelObj.profile) this.createImage(this.modelObj.profile[0]) },}
         ],
@@ -96,7 +93,7 @@ export default {
         this.addProduct(data)
       })
     },
-    methods:{
+  methods:{
     getProducts(){
       let x=JSON.parse(localStorage.getItem("Productsdata"))
       x ? this.Products=x.slice() : this.Products=[]
@@ -112,7 +109,7 @@ export default {
     },
     closeform(){
       this.dialog=false
-      this.$refs.formRef.$refs.validateForm.reset.length ? this.$refs.formRef.$refs.validateForm.reset() : false
+      this.$refs.formRef.$refs.validateForm.reset()
     },
     createImage(file) {
       if(file){
@@ -128,22 +125,21 @@ export default {
       this.dialog=false
       this.setProducts()
       this.$refs.formRef.$refs.validateForm.reset()
-      }else{
-        this.snackbar={title:'Give Valid Details...',state:true}
-      }
+      } else this.$root.$emit('AlertUser','Give Valid Details...', true) 
     },
     editProduct(data){
-      this.updateBtn=true
-      this.dialog=true
+      this.updateBtn = this.dialog = true
       this.modelObj=Object.assign({},data)
     },
     updateProduct(){
-      this.dialog=false
-      this.Products.forEach((x,index)=>{
-        x.id===this.modelObj.id ? this.Products.splice(index,1,this.modelObj) : false
-      })
-      this.setProducts()
-      this.$refs.formRef.$refs.validateForm.reset()
+      if (this.$refs.formRef.$refs.validateForm.validate()) {
+        this.dialog=false
+        this.Products.forEach((x,index)=>{
+          x.id===this.modelObj.id ? this.Products.splice(index,1,this.modelObj) : false
+        })
+        this.setProducts()
+        this.$refs.formRef.$refs.validateForm.reset()
+      } else this.$root.$emit('AlertUser','Give Valid Details...', true) 
     },
     removeProducts(data){
       if(this.dialog){
